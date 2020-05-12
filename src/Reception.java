@@ -38,8 +38,11 @@ public class Reception {
                     client.register(selector, SelectionKey.OP_READ);
                 } else if (key.isReadable()) {
                     SocketChannel client = (SocketChannel) key.channel();
+                    if (key.attachment() == null) {
+                        key.attach(new ConnectionHandler());
+                    }
                     try {
-                        key.attach(new ConnectionHandler().handle(client, (User) key.attachment()));
+                        ((ConnectionHandler) key.attachment()).handle(client);
                     } catch (Exception e) {
                         e.printStackTrace();
                         client.write(ByteBuffer.wrap((e.getMessage() + "\r\n").getBytes()));

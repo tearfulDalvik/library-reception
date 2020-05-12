@@ -22,7 +22,9 @@ public class ConnectionHandler {
     public final CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder();
     public final SegmentedBuffer segmentedBuffer = new SegmentedBuffer();
 
-    public User handle(SocketChannel client, User user) throws Exception {
+    User servedUser = null;
+
+    public void handle(SocketChannel client) throws Exception {
         REUSABLE_BYTE_BUFFER.clear();
         boolean eof = client.read(REUSABLE_BYTE_BUFFER) == -1;
         REUSABLE_BYTE_BUFFER.flip();
@@ -42,7 +44,6 @@ public class ConnectionHandler {
             segmentedBuffer.flush();
         }
 
-        User servedUser = user;
         while (segmentedBuffer.hasNext()) {
             String[] input = segmentedBuffer.next().split(" ");
             try {
@@ -60,6 +61,5 @@ public class ConnectionHandler {
         if (eof) {
             throw new ClosedChannelException();
         }
-        return servedUser;
     }
 }

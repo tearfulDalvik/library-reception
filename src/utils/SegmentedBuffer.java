@@ -39,7 +39,7 @@ public class SegmentedBuffer implements Iterator<String> {
 
         int index = buffer.indexOf(terminator);
         String line = buffer.substring(0, index);
-        buffer = buffer.substring(index + 1);
+        buffer = buffer.substring(index + terminator.length());
         return line;
     }
 }
