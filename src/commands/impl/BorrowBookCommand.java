@@ -4,15 +4,17 @@ import commands.Command;
 import model.Book;
 import model.Library;
 import model.User;
+import utils.ConnectionHandler;
 
 import java.net.Socket;
+import java.nio.channels.SocketChannel;
 
 @Command.Meta(description = "借书")
 @Command.RequiresLogin
-public class LendBookCommand extends Command {
+public class BorrowBookCommand extends Command {
 
-    private LendBookCommand(User u, Socket s, String command, String... args) {
-        super(u, s, command, args);
+    private BorrowBookCommand(User u, ConnectionHandler h, SocketChannel s, String command, String... args) {
+        super(u, h, s, command, args);
     }
 
     @Override
