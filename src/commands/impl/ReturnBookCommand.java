@@ -4,17 +4,16 @@ import commands.Command;
 import model.Book;
 import model.Library;
 import model.User;
-import utils.ConnectionHandler;
+import utils.IOBuffer;
 
-import java.net.Socket;
 import java.nio.channels.SocketChannel;
 
 @Command.Meta(description = "还书")
 @Command.RequiresLogin
 public class ReturnBookCommand extends Command {
 
-    private ReturnBookCommand(User u, ConnectionHandler h, SocketChannel s, String command, String... args) {
-        super(u, h, s, command, args);
+    private ReturnBookCommand(User u, IOBuffer h, String command, String... args) {
+        super(u, h, command, args);
     }
 
     @Override

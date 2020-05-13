@@ -2,7 +2,7 @@ package commands;
 
 import commands.impl.*;
 import model.User;
-import utils.ConnectionHandler;
+import utils.IOBuffer;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,14 +12,6 @@ import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 
 public abstract class Command {
-
-    public ConnectionHandler getHandler() {
-        return handler;
-    }
-
-    public void setHandler(ConnectionHandler handler) {
-        this.handler = handler;
-    }
 
     @Retention(RetentionPolicy.RUNTIME)
     public @interface RequiresLogin {
@@ -37,7 +29,7 @@ public abstract class Command {
     private String[] args;
     private SocketChannel socket;
     private User user;
-    private ConnectionHandler handler;
+    private IOBuffer handler;
 
     static {
         table.put("LOGIN", StudentLoginCommand.class);
@@ -49,35 +41,33 @@ public abstract class Command {
         table.put("QUIT", QuitCommand.class);
     }
 
-    public static Command getCommand(User u, ConnectionHandler handler, SocketChannel s, String command, String... args) throws UnknownCommandException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    public static Command getCommand(User u, IOBuffer h, String command, String... args) throws UnknownCommandException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Class cmd = table.get(command.toUpperCase());
         if (cmd == null) {
             throw new UnknownCommandException("400 Unknown Command");
         }
-        Constructor a = cmd.getDeclaredConstructor(User.class, ConnectionHandler.class, SocketChannel.class, String.class, String[].class);
+        Constructor a = cmd.getDeclaredConstructor(User.class, IOBuffer.class, String.class, String[].class);
         a.setAccessible(true);
-        return (Command) a.newInstance(u, handler, s, command, args);
+        return (Command) a.newInstance(u, h, command, args);
     }
 
     /**
      * Mandatory constructor, without any signature changes please!
-     * @param s socket that is open with input and output stream
      */
-    protected Command(User u, ConnectionHandler handler, SocketChannel s, String command, String... args) {
-        if (!s.isConnected()) {
+    protected Command(User u, IOBuffer handler, String command, String... args) {
+        if (!handler.getClient().isConnected()) {
             throw new IllegalArgumentException();
         }
         this.command = command;
         this.args = args;
-        this.socket = s;
         this.user = u;
         this.handler = handler;
     }
 
     public abstract Object exec() throws Exception;
 
-    public SocketChannel getSocket() {
-        return socket;
+    public IOBuffer getHandler() {
+        return handler;
     }
 
     public User getUser() {
