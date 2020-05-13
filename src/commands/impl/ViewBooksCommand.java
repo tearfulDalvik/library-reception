@@ -23,7 +23,7 @@ public class ViewBooksCommand extends Command {
         getSocket().write(getHandler().encoder.encode(CharBuffer.wrap("ID\t\t\tBook\t\t\tAvailability\r\n")));
         Library.availableBooks().forEach((id, book) -> {
             try {
-                getSocket().write(getHandler().encoder.encode(CharBuffer.wrap(String.format("%s\t\t\t%s\t\t\t%s\r\n", id, book.getTitle(), book.getTotalCount() - book.getTotalLent() > 0 ? "✔" : "✖"))));
+                getSocket().write(getHandler().encoder.encode(CharBuffer.wrap(String.format("%s\t\t\t%s\t\t\t%s\r\n", id, book.getTitle(), book.getTotalCount() > 0 ? "✔" : "✖"))));
             } catch (IOException e) {
                 e.printStackTrace();
             }
