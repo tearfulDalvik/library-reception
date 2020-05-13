@@ -5,6 +5,7 @@ import commands.impl.StudentLoginCommand;
 import model.Student;
 import model.User;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ClosedChannelException;
@@ -14,17 +15,21 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.StandardCharsets;
 
-public class ConnectionHandler {
-    public static final ByteBuffer REUSABLE_BYTE_BUFFER = ByteBuffer.allocate(1024);
-    public static final CharBuffer REUSABLE_CHAR_BUFFER = CharBuffer.allocate(1024);
+public class IOBuffer {
+    private static final ByteBuffer REUSABLE_BYTE_BUFFER = ByteBuffer.allocate(1024);
+    private static final CharBuffer REUSABLE_CHAR_BUFFER = CharBuffer.allocate(1024);
 
-    public final CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
-    public final CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder();
-    public final SegmentedBuffer segmentedBuffer = new SegmentedBuffer();
+    private final CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
+    private final CharsetEncoder encoder = StandardCharsets.UTF_8.newEncoder();
+    private final SegmentedBuffer segmentedBuffer = new SegmentedBuffer();
+
+    private SocketChannel client;
 
     User servedUser = null;
 
     public void handle(SocketChannel client) throws Exception {
+        this.client = client;
+
         REUSABLE_BYTE_BUFFER.clear();
         boolean eof = client.read(REUSABLE_BYTE_BUFFER) == -1;
         REUSABLE_BYTE_BUFFER.flip();
@@ -47,7 +52,7 @@ public class ConnectionHandler {
         while (segmentedBuffer.hasNext()) {
             String[] input = segmentedBuffer.next().split(" ");
             try {
-                Command cmd = Command.getCommand(servedUser, this, client, input[0], input);
+                Command cmd = Command.getCommand(servedUser, this, input[0], input);
                 Object returnValue = cmd.exec();
                 if (cmd instanceof StudentLoginCommand && returnValue instanceof Student) {
                     servedUser = (User) returnValue;
@@ -61,5 +66,13 @@ public class ConnectionHandler {
         if (eof) {
             throw new ClosedChannelException();
         }
+    }
+
+    public void write(CharSequence thing) throws IOException {
+        getClient().write(encoder.encode(CharBuffer.wrap(thing)));
+    }
+
+    public SocketChannel getClient() {
+        return client;
     }
 }

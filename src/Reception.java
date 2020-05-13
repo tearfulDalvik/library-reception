@@ -1,5 +1,4 @@
-import model.User;
-import utils.ConnectionHandler;
+import utils.IOBuffer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -8,7 +7,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -39,10 +37,10 @@ public class Reception {
                 } else if (key.isReadable()) {
                     SocketChannel client = (SocketChannel) key.channel();
                     if (key.attachment() == null) {
-                        key.attach(new ConnectionHandler());
+                        key.attach(new IOBuffer());
                     }
                     try {
-                        ((ConnectionHandler) key.attachment()).handle(client);
+                        ((IOBuffer) key.attachment()).handle(client);
                     } catch (Exception e) {
                         e.printStackTrace();
                         client.write(ByteBuffer.wrap((e.getMessage() + "\r\n").getBytes()));
