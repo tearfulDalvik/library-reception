@@ -1,14 +1,11 @@
 package sh.dalvik.forum.pdo;
 
-import org.mariadb.jdbc.MariaDbConnection;
-import org.mariadb.jdbc.MariaDbStatement;
-
+import java.lang.annotation.Annotation;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.ResultSet;
 
 public class DBProxy {
 
@@ -34,36 +31,24 @@ public class DBProxy {
                 });
     }
 
-    private static Object process(Method m, Object... args) {
-        Query query = m.getDeclaredAnnotation(Query.class);
-        if(query != null) {
-            return "YES";
-        } else {
+    private static Object process(Method m, Object... args) throws Exception {
+        Annotation[] annotation = m.getDeclaredAnnotations();
+        if (annotation == null || annotation.length == 0) {
             throw new IllegalArgumentException("must include a Query annotation");
         }
-    }
-
-    private static class DBIO {
-
-        public static final String URL = "jdbc:mysql://localhost:3306/imooc";
-        public static final String USER = "liulx";
-        public static final String PASSWORD = "123456";
-
-        private static DBIO instance = null;
-        private MariaDbConnection connection = null;
-        private MariaDbStatement statement = null;
-
-        public static DBIO getInstance() throws Exception {
-            if (instance == null) {
-                instance = new DBIO();
+        DBIO.Builder queryBuilder = new DBIO.Builder();
+        for (Annotation a : annotation) {
+            if (a instanceof Query) {
+                queryBuilder.setQuery(((Query) a).value());
             }
-            return instance;
         }
-
-        private DBIO() throws Exception {
-            Class.forName("org.mariadb.jdbc.Driver");
-            connection = (MariaDbConnection) DriverManager.getConnection("jdbc:mariadb://10.20.0.41:3306/forumcli", "forumcli", "9C6rwcUEyZzRWDcr");
-            statement = (MariaDbStatement) connection.createStatement();
+        for (int i = 0; i < m.getParameterCount(); i++) {
+            queryBuilder.setParameter(i + 1, args[i]);
+        }
+        if (m.getReturnType() == ResultSet.class) {
+            return queryBuilder.query();
+        } else {
+            return queryBuilder.exec();
         }
     }
 }

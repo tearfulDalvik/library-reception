@@ -31,11 +31,12 @@ public abstract class Command {
     private IOBuffer handler;
 
     static {
-        table.put("LOGIN", StudentLoginCommand.class);
-        table.put("BOOKS", ViewBooksCommand.class);
-        table.put("DETAIL", BookDetailsCommand.class);
-        table.put("BORROW", BorrowBookCommand.class);
-        table.put("RETURN", ReturnBookCommand.class);
+        table.put("Q", QueryCommentCommand.class);
+        table.put("LOGIN", LoginCommand.class);
+        table.put("LOGOUT", LogoutCommand.class);
+        table.put("COM", CommentCommand.class);
+        table.put("DEL", DeleteCommentCommand.class);
+        table.put("REG", RegisterCommand.class);
         table.put("HELP", HelpCommand.class);
         table.put("QUIT", QuitCommand.class);
     }
@@ -73,7 +74,7 @@ public abstract class Command {
         return user;
     }
 
-    protected void assumeLoggedIn() throws IllegalAccessException {
+    public void assumeLoggedIn() throws IllegalAccessException {
         if (getUser() == null || !getUser().isLoggedIn()) {
             throw new IllegalAccessException("403 Forbidden");
         }

@@ -2,15 +2,22 @@ package sh.dalvik.forum.pdo.dao;
 
 import sh.dalvik.forum.pdo.DBProxy;
 
-public interface DaoUsers {
-    default String tableName() {
-        return "user";
-    }
+import java.sql.ResultSet;
 
-    default DaoUsers getInstance() {
+public interface DaoUsers {
+
+    String TABLE = "users";
+
+    static DaoUsers getInstance() {
         return DBProxy.proxy(DaoUsers.class);
     }
 
-    @DBProxy.Query("SELECT * FROM ${TABLE} WHERE `user` = '${userName}' LIMIT 1")
-    String getUserByName(String userName);
+    @DBProxy.Query("SELECT * FROM `" + TABLE + "` WHERE `uid`=? LIMIT 1;")
+    ResultSet getUserByUid(int uid);
+
+    @DBProxy.Query("SELECT * FROM `" + TABLE + "` WHERE `username`=? LIMIT 1;")
+    ResultSet getUserByName(String userName);
+
+    @DBProxy.Query("INSERT INTO `" + TABLE + "` (`username`, `password`) VALUES (?,?);")
+    void newUser(String userName, String password);
 }
